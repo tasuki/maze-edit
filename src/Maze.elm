@@ -3,6 +3,12 @@ module Maze exposing (..)
 import Array exposing (Array)
 import Random
 import Random.List
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+
+
+
+-- Directions
 
 
 type Direction
@@ -33,6 +39,24 @@ opposite dir =
             E
 
 
+invertDirections : List Direction -> List Direction
+invertDirections dirs =
+    List.filter (\dir -> List.member dir dirs == False) directions
+
+
+type alias DirectionsGenerator =
+    Random.Generator (List Direction)
+
+
+directionsGenerator : Random.Generator (List Direction)
+directionsGenerator =
+    Random.List.shuffle directions
+
+
+
+-- Position
+
+
 type alias Position =
     { row : Int
     , col : Int
@@ -48,13 +72,8 @@ type alias BacktrackStack =
     List Position
 
 
-type alias DirectionsGenerator =
-    Random.Generator (List Direction)
 
-
-directionsGenerator : Random.Generator (List Direction)
-directionsGenerator =
-    Random.List.shuffle directions
+-- Maze
 
 
 type alias Maze =
@@ -86,7 +105,7 @@ move maze pos dir =
                 W ->
                     { pos | col = pos.col - 1 }
     in
-    if newPos.row >= 0 && newPos.row < maze.height && newPos.col >= 0 && newPos.col < maze.height then
+    if newPos.row >= 0 && newPos.row < maze.height && newPos.col >= 0 && newPos.col < maze.width then
         Just newPos
 
     else
@@ -102,6 +121,11 @@ getField : Maze -> Position -> List Direction
 getField maze pos =
     Array.get (fieldIndex maze pos) maze.fields
         |> Maybe.withDefault []
+
+
+positionFromIndex : Maze -> Int -> Position
+positionFromIndex maze i =
+    Position (i // maze.width) (modBy maze.width i)
 
 
 visitNew : Maze -> Position -> Maybe Position
@@ -158,3 +182,54 @@ expand stack dirs maze =
 
         _ ->
             ( maze, Nothing )
+
+
+
+-- Views
+
+
+viewWall : Position -> Direction -> Svg msg
+viewWall position dir =
+    let
+        nil =
+            0.0
+
+        one =
+            1.0
+
+        ( ( ax, ay ), ( bx, by ) ) =
+            case dir of
+                N ->
+                    ( ( nil, nil ), ( one, nil ) )
+
+                S ->
+                    ( ( nil, one ), ( one, one ) )
+
+                E ->
+                    ( ( one, nil ), ( one, one ) )
+
+                W ->
+                    ( ( nil, nil ), ( nil, one ) )
+    in
+    line
+        [ x1 (String.fromFloat (ax + toFloat position.col))
+        , y1 (String.fromFloat (ay + toFloat position.row))
+        , x2 (String.fromFloat (bx + toFloat position.col))
+        , y2 (String.fromFloat (by + toFloat position.row))
+        , stroke "navy"
+        , strokeWidth ".1"
+        , strokeLinecap "round"
+        ]
+        []
+
+
+viewField : Maze -> Int -> List Direction -> List (Svg msg)
+viewField maze index dirs =
+    List.map (viewWall (positionFromIndex maze index)) (invertDirections dirs)
+
+
+viewLines : Maze -> List (Svg msg)
+viewLines maze =
+    Array.indexedMap (viewField maze) maze.fields
+        |> Array.toList
+        |> List.concat

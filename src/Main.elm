@@ -1,9 +1,11 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (..)
-import Maze exposing (BacktrackStack, Direction, Maze)
+import Html exposing (Html)
+import Maze exposing (BacktrackStack, Direction, Maze, viewLines)
 import Random
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 
 main =
@@ -61,5 +63,20 @@ subscriptions m =
 view : Model -> Browser.Document Msg
 view model =
     { title = "Title goes here"
-    , body = [ div [] [] ]
+    , body = [ viewMaze model.maze ]
     }
+
+
+viewMaze : Maze -> Html msg
+viewMaze maze =
+    svg
+        [ viewBox
+            ("-1 -1 "
+                ++ String.fromInt (maze.width + 2)
+                ++ " "
+                ++ String.fromInt (maze.height + 2)
+            )
+        , width "700"
+        , height "700"
+        ]
+        (viewLines maze)
