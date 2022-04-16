@@ -33,7 +33,14 @@ expandMaze bts =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Maze.init 20 10), expandMaze [ Maze.startingPosition ] )
+    let
+        maze =
+            Maze.init 10 20
+
+        startingPosition =
+            Maze.Position (maze.height // 2) (maze.width // 2)
+    in
+    ( Model maze, expandMaze [ startingPosition ] )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

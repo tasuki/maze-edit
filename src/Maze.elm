@@ -63,11 +63,6 @@ type alias Position =
     }
 
 
-startingPosition : Position
-startingPosition =
-    Position 0 0
-
-
 type alias BacktrackStack =
     List Position
 
@@ -77,15 +72,15 @@ type alias BacktrackStack =
 
 
 type alias Maze =
-    { width : Int
-    , height : Int
+    { height : Int
+    , width : Int
     , fields : Array (List Direction)
     }
 
 
 init : Int -> Int -> Maze
-init width height =
-    Maze width height (Array.repeat (width * height) [])
+init height width =
+    Maze height width (Array.repeat (width * height) [])
 
 
 move : Maze -> Position -> Direction -> Maybe Position
