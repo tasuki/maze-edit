@@ -44,13 +44,9 @@ invertDirections dirs =
     List.filter (\dir -> List.member dir dirs == False) directions
 
 
-type alias DirectionsGenerator =
-    Random.Generator (List Direction)
-
-
-directionsGenerator : Random.Generator (List Direction)
-directionsGenerator =
-    Random.List.shuffle directions
+directionGenerator : Int -> Random.Generator (List (List Direction))
+directionGenerator size =
+    Random.list size (Random.List.shuffle [ N, S, E, W ])
 
 
 
@@ -182,6 +178,25 @@ expand stack dirs maze =
 
         _ ->
             ( maze, Nothing )
+
+
+expandMaze : List (List Direction) -> BacktrackStack -> Maze -> Maze
+expandMaze dirs stack maze =
+    case dirs of
+        dirsHead :: dirsTail ->
+            let
+                ( newMaze, parameters ) =
+                    expand stack dirsHead maze
+            in
+            case parameters of
+                Just backtrackStack ->
+                    expandMaze dirsTail backtrackStack newMaze
+
+                _ ->
+                    maze
+
+        _ ->
+            maze
 
 
 

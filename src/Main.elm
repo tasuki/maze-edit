@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html)
-import Maze exposing (BacktrackStack, Direction, Maze, viewLines)
+import Maze exposing (BacktrackStack, Maze)
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -18,7 +18,7 @@ main =
 
 
 type Msg
-    = ExpandMaze BacktrackStack (List Direction)
+    = ExpandMaze BacktrackStack (List (List Maze.Direction))
 
 
 type alias Model =
@@ -26,33 +26,29 @@ type alias Model =
     }
 
 
-expandMaze : BacktrackStack -> Cmd Msg
-expandMaze bts =
-    Random.generate (ExpandMaze bts) Maze.directionsGenerator
+expandMazeCmd : Maze.Maze -> BacktrackStack -> Cmd Msg
+expandMazeCmd maze bts =
+    Random.generate (ExpandMaze bts) (Maze.directionGenerator (maze.width * maze.height * 2))
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Model (Maze.init 20 10), expandMaze [ Maze.startingPosition ] )
+    let
+        maze =
+            Maze.init 20 10
+    in
+    ( Model maze
+    , expandMazeCmd maze [ Maze.startingPosition ]
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ExpandMaze stack directions ->
-            let
-                ( newMaze, parameters ) =
-                    Maze.expand stack directions model.maze
-
-                command =
-                    case parameters of
-                        Just backtrackStack ->
-                            expandMaze backtrackStack
-
-                        _ ->
-                            Cmd.none
-            in
-            ( { model | maze = newMaze }, command )
+            ( { model | maze = Maze.expandMaze directions stack model.maze }
+            , Cmd.none
+            )
 
 
 subscriptions : model -> Sub msg
@@ -67,7 +63,7 @@ view model =
     }
 
 
-viewMaze : Maze -> Html msg
+viewMaze : Maze.Maze -> Html msg
 viewMaze maze =
     svg
         [ viewBox
@@ -79,4 +75,4 @@ viewMaze maze =
         , width "700"
         , height "700"
         ]
-        (viewLines maze)
+        (Maze.viewLines maze)
