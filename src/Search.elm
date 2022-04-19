@@ -3,7 +3,8 @@ module Search exposing (..)
 import Array exposing (Array)
 import Fifo exposing (Fifo)
 import Maze exposing (Direction, Maze, Position)
-import Svg exposing (Svg)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 
 type alias Path =
@@ -55,12 +56,21 @@ findPaths maze from to =
                     ( open, closed )
 
                 head :: tail ->
-                    expand
-                        tail
-                        node
-                        ( Fifo.insert (Node head (ParentNode <| Just node) (node.cost + 1)) open
-                        , Array.set (Maze.fieldIndex maze head) True closed
-                        )
+                    let
+                        index =
+                            Maze.fieldIndex maze head
+
+                        openClosed =
+                            case Array.get index closed of
+                                Just False ->
+                                    ( Fifo.insert (Node head (ParentNode <| Just node) (node.cost + 1)) open
+                                    , Array.set index True closed
+                                    )
+
+                                _ ->
+                                    ( open, closed )
+                    in
+                    expand tail node openClosed
 
         helper : OpenClosed -> List Path
         helper ( open, closed ) =
@@ -90,6 +100,21 @@ findPaths maze from to =
         )
 
 
-viewPaths : Maze -> List Path -> List (Svg msg)
-viewPaths maze paths =
-    []
+
+-- Views
+
+
+viewPosition : Position -> Svg msg
+viewPosition pos =
+    circle
+        [ cx <| String.fromInt pos.col ++ ".5"
+        , cy <| String.fromInt pos.row ++ ".5"
+        , r ".1"
+        , fill "orange"
+        ]
+        []
+
+
+viewPaths : List Path -> List (Svg msg)
+viewPaths =
+    List.concatMap (List.map viewPosition)

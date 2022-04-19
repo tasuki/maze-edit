@@ -66,7 +66,10 @@ update msg model =
                 | paths =
                     Search.findPaths model.maze
                         (Maze.Position 0 0)
-                        (Maze.Position model.maze.height model.maze.width)
+                        (Maze.Position
+                            (model.maze.height - 1)
+                            (model.maze.width - 1)
+                        )
               }
             , Cmd.none
             )
@@ -96,4 +99,4 @@ viewMaze maze paths =
         , width "700"
         , height "700"
         ]
-        (viewFields maze ++ viewPaths maze paths)
+        (viewFields maze ++ viewPaths paths)
