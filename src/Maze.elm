@@ -39,11 +39,6 @@ opposite dir =
             E
 
 
-invertDirections : List Direction -> List Direction
-invertDirections dirs =
-    List.filter (\dir -> List.member dir dirs == False) directions
-
-
 type alias DirectionsGenerator =
     Random.Generator (List Direction)
 
@@ -218,13 +213,36 @@ viewWall position dir =
         []
 
 
+viewDirections : Position -> List Direction -> List Direction
+viewDirections position passages =
+    let
+        shouldViewWall wallDirection =
+            case wallDirection of
+                N ->
+                    position.row == 0
+
+                W ->
+                    position.col == 0
+
+                _ ->
+                    True
+    in
+    directions
+        |> List.filter (\dir -> List.member dir passages == False)
+        |> List.filter shouldViewWall
+
+
 viewField : Maze -> Int -> List Direction -> List (Svg msg)
-viewField maze index dirs =
-    List.map (viewWall (positionFromIndex maze index)) (invertDirections dirs)
+viewField maze index passages =
+    let
+        position =
+            positionFromIndex maze index
+    in
+    List.map (viewWall position) (viewDirections position passages)
 
 
-viewLines : Maze -> List (Svg msg)
-viewLines maze =
+viewFields : Maze -> List (Svg msg)
+viewFields maze =
     Array.indexedMap (viewField maze) maze.fields
         |> Array.toList
         |> List.concat

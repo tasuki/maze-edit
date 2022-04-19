@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html)
-import Maze exposing (BacktrackStack, Direction, Maze, viewLines)
+import Maze exposing (BacktrackStack, Direction, Maze, viewFields)
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -86,4 +86,4 @@ viewMaze maze =
         , width "700"
         , height "700"
         ]
-        (viewLines maze)
+        (viewFields maze)
