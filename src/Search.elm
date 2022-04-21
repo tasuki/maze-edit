@@ -92,11 +92,12 @@ findPaths maze from to =
                         [ nodeToPath current ]
 
                     else
-                        helper <|
-                            expand
+                        helper
+                            (expand
                                 (neighbors maze current.position)
                                 current
                                 ( newOpen, closed )
+                            )
 
         fromIndex =
             Maze.fieldIndex maze from
