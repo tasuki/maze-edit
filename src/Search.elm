@@ -49,28 +49,35 @@ neighbors maze pos =
 findPaths : Maze -> Position -> Position -> List Path
 findPaths maze from to =
     let
-        expand : List Position -> Node -> OpenClosed -> OpenClosed
-        expand positions node ( open, closed ) =
-            case positions of
-                [] ->
+        openPosition : Position -> Node -> OpenClosed -> OpenClosed
+        openPosition position parentNode ( open, closed ) =
+            let
+                index =
+                    Maze.fieldIndex maze position
+            in
+            case Array.get index closed of
+                Just False ->
+                    ( Fifo.insert
+                        (Node
+                            position
+                            (ParentNode <| Just parentNode)
+                            (parentNode.cost + 1)
+                        )
+                        open
+                    , Array.set index True closed
+                    )
+
+                _ ->
                     ( open, closed )
 
+        expand : List Position -> Node -> OpenClosed -> OpenClosed
+        expand positions parentNode openClosed =
+            case positions of
+                [] ->
+                    openClosed
+
                 head :: tail ->
-                    let
-                        index =
-                            Maze.fieldIndex maze head
-
-                        openClosed =
-                            case Array.get index closed of
-                                Just False ->
-                                    ( Fifo.insert (Node head (ParentNode <| Just node) (node.cost + 1)) open
-                                    , Array.set index True closed
-                                    )
-
-                                _ ->
-                                    ( open, closed )
-                    in
-                    expand tail node openClosed
+                    expand tail parentNode (openPosition head parentNode openClosed)
 
         helper : OpenClosed -> List Path
         helper ( open, closed ) =
