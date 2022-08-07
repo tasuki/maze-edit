@@ -39,10 +39,6 @@ opposite dir =
             E
 
 
-type alias DirectionsGenerator =
-    Random.Generator (List Direction)
-
-
 directionsGenerator : Random.Generator (List Direction)
 directionsGenerator =
     Random.List.shuffle directions
@@ -178,8 +174,8 @@ expand stack dirs maze =
 -- Views
 
 
-viewWall : Position -> Direction -> Svg msg
-viewWall position dir =
+viewWall : Position -> ( Bool, Direction ) -> Svg msg
+viewWall position ( visible, dir ) =
     let
         nil =
             0.0
@@ -200,20 +196,27 @@ viewWall position dir =
 
                 W ->
                     ( ( nil, nil ), ( nil, one ) )
+
+        wallStroke =
+            if visible then
+                "navy"
+
+            else
+                "transparent"
     in
     line
         [ x1 (String.fromFloat (ax + toFloat position.col))
         , y1 (String.fromFloat (ay + toFloat position.row))
         , x2 (String.fromFloat (bx + toFloat position.col))
         , y2 (String.fromFloat (by + toFloat position.row))
-        , stroke "navy"
+        , stroke wallStroke
         , strokeWidth ".1"
         , strokeLinecap "round"
         ]
         []
 
 
-viewDirections : Position -> List Direction -> List Direction
+viewDirections : Position -> List Direction -> List ( Bool, Direction )
 viewDirections position passages =
     let
         shouldViewWall wallDirection =
@@ -228,8 +231,8 @@ viewDirections position passages =
                     True
     in
     directions
-        |> List.filter (\dir -> List.member dir passages == False)
         |> List.filter shouldViewWall
+        |> List.map (\dir -> ( not (List.member dir passages), dir ))
 
 
 viewField : Maze -> Int -> List Direction -> List (Svg msg)

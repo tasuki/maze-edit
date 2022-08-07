@@ -38,6 +38,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         maze =
+            -- Maze.init 50 26
             Maze.init 10 20
 
         startingPosition =
@@ -82,7 +83,7 @@ subscriptions m =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Title goes here"
+    { title = "A Maze-ing Editor"
     , body = [ viewMaze model.maze model.paths ]
     }
 
