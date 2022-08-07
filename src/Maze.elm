@@ -129,17 +129,6 @@ expandCell maze pos dir =
     move maze pos dir |> Maybe.andThen (visitNew maze)
 
 
-addDirection : Position -> Direction -> Maze -> Maze
-addDirection pos dir maze =
-    { maze
-        | fields =
-            Array.set
-                (fieldIndex maze pos)
-                (dir :: getField maze pos)
-                maze.fields
-    }
-
-
 flipDirection : Position -> Direction -> Maze -> Maze
 flipDirection pos dir maze =
     let
@@ -174,8 +163,8 @@ tryDirections pos backtrack dirs maze =
                     let
                         newMaze =
                             maze
-                                |> addDirection pos currentDir
-                                |> addDirection newPos (opposite currentDir)
+                                |> flipDirection pos currentDir
+                                |> flipDirection newPos (opposite currentDir)
                     in
                     ( newMaze, Just (newPos :: pos :: backtrack) )
 
