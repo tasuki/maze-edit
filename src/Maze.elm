@@ -5,6 +5,7 @@ import Random
 import Random.List
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Svg.Events exposing (onClick)
 
 
 
@@ -139,6 +140,28 @@ addDirection pos dir maze =
     }
 
 
+flipDirection : Position -> Direction -> Maze -> Maze
+flipDirection pos dir maze =
+    let
+        dirs =
+            getField maze pos
+
+        newDirs =
+            if List.member dir dirs then
+                List.filter (\d -> d /= dir) dirs
+
+            else
+                dir :: dirs
+    in
+    { maze
+        | fields =
+            Array.set
+                (fieldIndex maze pos)
+                newDirs
+                maze.fields
+    }
+
+
 tryDirections : Position -> BacktrackStack -> List Direction -> Maze -> ( Maze, Maybe BacktrackStack )
 tryDirections pos backtrack dirs maze =
     case dirs of
@@ -170,12 +193,22 @@ expand stack dirs maze =
             ( maze, Nothing )
 
 
+flipWall : Position -> Direction -> Maze -> Maze
+flipWall pos dir maze =
+    case move maze pos dir of
+        Just otherPos ->
+            flipDirection pos dir maze |> flipDirection otherPos (opposite dir)
+
+        _ ->
+            maze
+
+
 
 -- Views
 
 
-viewWall : Position -> ( Bool, Direction ) -> Svg msg
-viewWall position ( visible, dir ) =
+viewWall : (Position -> Direction -> msg) -> Position -> ( Bool, Direction ) -> Svg msg
+viewWall flipAction position ( visible, dir ) =
     let
         nil =
             0.0
@@ -212,6 +245,7 @@ viewWall position ( visible, dir ) =
         , stroke wallStroke
         , strokeWidth ".1"
         , strokeLinecap "round"
+        , onClick (flipAction position dir)
         ]
         []
 
@@ -235,17 +269,17 @@ viewDirections position passages =
         |> List.map (\dir -> ( not (List.member dir passages), dir ))
 
 
-viewField : Maze -> Int -> List Direction -> List (Svg msg)
-viewField maze index passages =
+viewField : (Position -> Direction -> msg) -> Maze -> Int -> List Direction -> List (Svg msg)
+viewField flipAction maze index passages =
     let
         position =
             positionFromIndex maze index
     in
-    List.map (viewWall position) (viewDirections position passages)
+    List.map (viewWall flipAction position) (viewDirections position passages)
 
 
-viewFields : Maze -> List (Svg msg)
-viewFields maze =
-    Array.indexedMap (viewField maze) maze.fields
+viewFields : (Position -> Direction -> msg) -> Maze -> List (Svg msg)
+viewFields flipAction maze =
+    Array.indexedMap (viewField flipAction maze) maze.fields
         |> Array.toList
         |> List.concat

@@ -21,6 +21,7 @@ main =
 type Msg
     = ExpandMaze BacktrackStack (List Direction)
     | FindPaths
+    | FlipWall Maze.Position Direction
 
 
 type alias Model =
@@ -75,6 +76,10 @@ update msg model =
             , Cmd.none
             )
 
+        FlipWall pos dir ->
+            update FindPaths
+                { model | maze = Maze.flipWall pos dir model.maze }
+
 
 subscriptions : model -> Sub msg
 subscriptions m =
@@ -88,7 +93,7 @@ view model =
     }
 
 
-viewMaze : Maze -> List Search.Path -> Html msg
+viewMaze : Maze -> List Search.Path -> Html Msg
 viewMaze maze paths =
     svg
         [ viewBox
@@ -100,4 +105,4 @@ viewMaze maze paths =
         , width "700"
         , height "700"
         ]
-        (viewFields maze ++ viewPaths paths)
+        (viewFields FlipWall maze ++ viewPaths paths)
