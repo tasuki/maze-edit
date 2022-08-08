@@ -5,8 +5,8 @@ import Html exposing (Html)
 import Maze exposing (BacktrackStack, Direction, Maze, viewFields)
 import Random
 import Search exposing (viewPaths)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg exposing (svg)
+import Svg.Attributes exposing (height, viewBox, width)
 
 
 main =

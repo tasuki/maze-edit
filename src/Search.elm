@@ -1,4 +1,4 @@
-module Search exposing (..)
+module Search exposing (Path, findPaths, viewPaths)
 
 import Array exposing (Array)
 import Fifo exposing (Fifo)
