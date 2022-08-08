@@ -1,13 +1,14 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html)
+import Html exposing (Html, div)
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Decode as JD
-import Maze exposing (BacktrackStack, Direction, Maze, Position)
+import Maze exposing (BacktrackStack, Direction, Maze, Position, viewFields)
 import Random
 import Search
+import Secrets
 import Svg
 import Svg.Attributes as SA
 
@@ -52,8 +53,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         maze =
-            -- Maze.init 50 26
-            Maze.init 10 20
+            Maze.init 50 26
 
         startPos =
             Position 0 0
@@ -150,4 +150,5 @@ viewMaze model =
         (Maze.viewFields FlipWall Drop model.maze
             ++ Search.viewPaths model.paths
             ++ Search.viewStartAndEnd model.start model.end
+            ++ Secrets.viewSumLetters model.maze (List.head model.paths |> Maybe.withDefault [])
         )

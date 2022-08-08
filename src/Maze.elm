@@ -246,7 +246,7 @@ viewWall flipAction position ( visible, dir ) =
         , SA.x2 (String.fromFloat (bx + toFloat position.col))
         , SA.y2 (String.fromFloat (by + toFloat position.row))
         , SA.stroke wallStroke
-        , SA.strokeWidth ".1"
+        , SA.strokeWidth ".3"
         , SA.strokeLinecap "round"
         , SE.onClick (flipAction position dir)
         ]
