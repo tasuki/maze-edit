@@ -27,6 +27,8 @@ type Msg
 type alias Model =
     { maze : Maze
     , paths : List Search.Path
+    , start : Position
+    , end : Position
     }
 
 
@@ -42,10 +44,18 @@ init _ =
             -- Maze.init 50 26
             Maze.init 10 20
 
-        startingPosition =
+        startPos =
+            Position 0 0
+
+        endPos =
+            Position (maze.height - 1) (maze.width - 1)
+
+        expandStart =
             Position (maze.height // 2) (maze.width // 2)
     in
-    ( Model maze [], expandMaze [ startingPosition ] )
+    ( Model maze [] startPos endPos
+    , expandMaze [ expandStart ]
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -66,12 +76,7 @@ update msg model =
         FindPaths ->
             ( { model
                 | paths =
-                    Search.findPaths model.maze
-                        (Position 0 0)
-                        (Position
-                            (model.maze.height - 1)
-                            (model.maze.width - 1)
-                        )
+                    Search.findPaths model.maze model.start model.end
               }
             , Cmd.none
             )
