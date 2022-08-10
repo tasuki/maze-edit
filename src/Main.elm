@@ -2,6 +2,9 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html)
+import Html.Attributes as HA
+import Html.Events as HE
+import Json.Decode as JD
 import Maze exposing (BacktrackStack, Direction, Maze, Position)
 import Random
 import Search
@@ -22,6 +25,13 @@ type Msg
     = ExpandMaze BacktrackStack (List Direction)
     | FindPaths
     | FlipWall Position Direction
+    | Drag Draggable
+    | Drop Position
+
+
+type Draggable
+    = Start
+    | End
 
 
 type alias Model =
@@ -29,6 +39,7 @@ type alias Model =
     , paths : List Search.Path
     , start : Position
     , end : Position
+    , dragged : Maybe Draggable
     }
 
 
@@ -53,9 +64,22 @@ init _ =
         expandStart =
             Position (maze.height // 2) (maze.width // 2)
     in
-    ( Model maze [] startPos endPos
+    ( Model maze [] startPos endPos Nothing
     , expandMaze [ expandStart ]
     )
+
+
+reactToDrop : Position -> Model -> Model
+reactToDrop pos model =
+    case model.dragged of
+        Just Start ->
+            { model | start = pos }
+
+        Just End ->
+            { model | end = pos }
+
+        _ ->
+            model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,6 +109,12 @@ update msg model =
             update FindPaths
                 { model | maze = Maze.flipWall pos dir model.maze }
 
+        Drag draggable ->
+            ( { model | dragged = Just draggable }, Cmd.none )
+
+        Drop position ->
+            update FindPaths (reactToDrop position model)
+
 
 subscriptions : model -> Sub msg
 subscriptions m =
@@ -94,7 +124,14 @@ subscriptions m =
 view : Model -> Browser.Document Msg
 view model =
     { title = "A Maze-ing Editor"
-    , body = [ viewMaze model ]
+    , body =
+        [ viewMaze model
+        , Html.div []
+            [ Html.span [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag Start) ] [ Html.text "drag to place Start" ]
+            , Html.text " ... "
+            , Html.span [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag End) ] [ Html.text "drag to place End" ]
+            ]
+        ]
     }
 
 
@@ -110,7 +147,7 @@ viewMaze model =
         , SA.width "700"
         , SA.height "700"
         ]
-        (Maze.viewFields FlipWall model.maze
+        (Maze.viewFields FlipWall Drop model.maze
             ++ Search.viewPaths model.paths
             ++ Search.viewStartAndEnd model.start model.end
         )

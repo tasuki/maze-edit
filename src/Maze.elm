@@ -14,6 +14,7 @@ module Maze exposing
     )
 
 import Array exposing (Array)
+import Json.Decode as JD
 import Random
 import Random.List
 import Svg exposing (Svg)
@@ -271,17 +272,33 @@ viewDirections position passages =
         |> List.map (\dir -> ( not (List.member dir passages), dir ))
 
 
-viewField : (Position -> Direction -> msg) -> Maze -> Int -> List Direction -> List (Svg msg)
-viewField flipAction maze index passages =
+viewFieldInteract : (Position -> msg) -> Position -> Svg msg
+viewFieldInteract dropAction pos =
+    Svg.rect
+        [ SA.x <| String.fromInt pos.col ++ ".15"
+        , SA.y <| String.fromInt pos.row ++ ".15"
+        , SA.width ".7"
+        , SA.height ".7"
+        , SA.fill "ghostwhite"
+        , SE.preventDefaultOn "dragover" (JD.succeed ( dropAction pos, True ))
+        ]
+        []
+
+
+viewField : (Position -> Direction -> msg) -> (Position -> msg) -> Maze -> Int -> List Direction -> List (Svg msg)
+viewField flipAction dropAction maze index passages =
     let
         position =
             positionFromIndex maze index
     in
-    List.map (viewWall flipAction position) (viewDirections position passages)
+    viewFieldInteract dropAction position
+        :: List.map
+            (viewWall flipAction position)
+            (viewDirections position passages)
 
 
-viewFields : (Position -> Direction -> msg) -> Maze -> List (Svg msg)
-viewFields flipAction maze =
-    Array.indexedMap (viewField flipAction maze) maze.fields
+viewFields : (Position -> Direction -> msg) -> (Position -> msg) -> Maze -> List (Svg msg)
+viewFields flipAction dropAction maze =
+    Array.indexedMap (viewField flipAction dropAction maze) maze.fields
         |> Array.toList
         |> List.concat
