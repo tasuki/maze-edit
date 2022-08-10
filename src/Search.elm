@@ -1,4 +1,4 @@
-module Search exposing (Path, findPaths, viewPaths)
+module Search exposing (Path, findPaths, viewPaths, viewStartAndEnd)
 
 import Array exposing (Array)
 import Fifo exposing (Fifo)
@@ -124,5 +124,25 @@ viewPosition pos =
 
 
 viewPaths : List Path -> List (Svg msg)
-viewPaths =
-    List.concatMap (List.map viewPosition)
+viewPaths paths =
+    List.map (\p -> List.drop 1 p |> List.reverse |> List.drop 1) paths
+        |> List.concatMap (List.map viewPosition)
+
+
+viewStartOrEnd : Position -> Char -> Svg msg
+viewStartOrEnd pos char =
+    Svg.text_
+        [ SA.x <| String.fromInt pos.col ++ ".3"
+        , SA.y <| String.fromInt pos.row ++ ".8"
+        , SA.fill "orange"
+        , SA.fontSize ".8"
+        , SA.fontWeight "bold"
+        ]
+        [ Svg.text <| String.fromChar char ]
+
+
+viewStartAndEnd : Position -> Position -> List (Svg msg)
+viewStartAndEnd start end =
+    [ viewStartOrEnd start 'S'
+    , viewStartOrEnd end 'E'
+    ]

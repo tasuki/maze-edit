@@ -94,20 +94,23 @@ subscriptions m =
 view : Model -> Browser.Document Msg
 view model =
     { title = "A Maze-ing Editor"
-    , body = [ viewMaze model.maze model.paths ]
+    , body = [ viewMaze model ]
     }
 
 
-viewMaze : Maze -> List Search.Path -> Html Msg
-viewMaze maze paths =
+viewMaze : Model -> Html Msg
+viewMaze model =
     Svg.svg
         [ SA.viewBox
             ("-1 -1 "
-                ++ String.fromInt (maze.width + 2)
+                ++ String.fromInt (model.maze.width + 2)
                 ++ " "
-                ++ String.fromInt (maze.height + 2)
+                ++ String.fromInt (model.maze.height + 2)
             )
         , SA.width "700"
         , SA.height "700"
         ]
-        (Maze.viewFields FlipWall maze ++ Search.viewPaths paths)
+        (Maze.viewFields FlipWall model.maze
+            ++ Search.viewPaths model.paths
+            ++ Search.viewStartAndEnd model.start model.end
+        )
