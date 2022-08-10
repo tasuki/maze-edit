@@ -1,11 +1,24 @@
-module Maze exposing (..)
+module Maze exposing
+    ( BacktrackStack
+    , Direction
+    , Maze
+    , Position
+    , directionsGenerator
+    , expand
+    , fieldIndex
+    , flipWall
+    , getField
+    , init
+    , move
+    , viewFields
+    )
 
 import Array exposing (Array)
 import Random
 import Random.List
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
-import Svg.Events exposing (onClick)
+import Svg exposing (Svg)
+import Svg.Attributes as SA
+import Svg.Events as SE
 
 
 
@@ -226,15 +239,15 @@ viewWall flipAction position ( visible, dir ) =
             else
                 "transparent"
     in
-    line
-        [ x1 (String.fromFloat (ax + toFloat position.col))
-        , y1 (String.fromFloat (ay + toFloat position.row))
-        , x2 (String.fromFloat (bx + toFloat position.col))
-        , y2 (String.fromFloat (by + toFloat position.row))
-        , stroke wallStroke
-        , strokeWidth ".1"
-        , strokeLinecap "round"
-        , onClick (flipAction position dir)
+    Svg.line
+        [ SA.x1 (String.fromFloat (ax + toFloat position.col))
+        , SA.y1 (String.fromFloat (ay + toFloat position.row))
+        , SA.x2 (String.fromFloat (bx + toFloat position.col))
+        , SA.y2 (String.fromFloat (by + toFloat position.row))
+        , SA.stroke wallStroke
+        , SA.strokeWidth ".1"
+        , SA.strokeLinecap "round"
+        , SE.onClick (flipAction position dir)
         ]
         []
 

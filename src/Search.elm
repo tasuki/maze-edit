@@ -3,8 +3,8 @@ module Search exposing (Path, findPaths, viewPaths)
 import Array exposing (Array)
 import Fifo exposing (Fifo)
 import Maze exposing (Direction, Maze, Position)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg exposing (Svg)
+import Svg.Attributes as SA
 
 
 type alias Path =
@@ -114,11 +114,11 @@ findPaths maze from to =
 
 viewPosition : Position -> Svg msg
 viewPosition pos =
-    circle
-        [ cx <| String.fromInt pos.col ++ ".5"
-        , cy <| String.fromInt pos.row ++ ".5"
-        , r ".1"
-        , fill "orange"
+    Svg.circle
+        [ SA.cx <| String.fromInt pos.col ++ ".5"
+        , SA.cy <| String.fromInt pos.row ++ ".5"
+        , SA.r ".1"
+        , SA.fill "orange"
         ]
         []
 

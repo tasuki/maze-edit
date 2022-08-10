@@ -2,11 +2,11 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (Html)
-import Maze exposing (BacktrackStack, Direction, Maze, viewFields)
+import Maze exposing (BacktrackStack, Direction, Maze, Position)
 import Random
-import Search exposing (viewPaths)
-import Svg exposing (svg)
-import Svg.Attributes exposing (height, viewBox, width)
+import Search
+import Svg
+import Svg.Attributes as SA
 
 
 main =
@@ -21,7 +21,7 @@ main =
 type Msg
     = ExpandMaze BacktrackStack (List Direction)
     | FindPaths
-    | FlipWall Maze.Position Direction
+    | FlipWall Position Direction
 
 
 type alias Model =
@@ -43,7 +43,7 @@ init _ =
             Maze.init 10 20
 
         startingPosition =
-            Maze.Position (maze.height // 2) (maze.width // 2)
+            Position (maze.height // 2) (maze.width // 2)
     in
     ( Model maze [], expandMaze [ startingPosition ] )
 
@@ -67,8 +67,8 @@ update msg model =
             ( { model
                 | paths =
                     Search.findPaths model.maze
-                        (Maze.Position 0 0)
-                        (Maze.Position
+                        (Position 0 0)
+                        (Position
                             (model.maze.height - 1)
                             (model.maze.width - 1)
                         )
@@ -95,14 +95,14 @@ view model =
 
 viewMaze : Maze -> List Search.Path -> Html Msg
 viewMaze maze paths =
-    svg
-        [ viewBox
+    Svg.svg
+        [ SA.viewBox
             ("-1 -1 "
                 ++ String.fromInt (maze.width + 2)
                 ++ " "
                 ++ String.fromInt (maze.height + 2)
             )
-        , width "700"
-        , height "700"
+        , SA.width "700"
+        , SA.height "700"
         ]
-        (viewFields FlipWall maze ++ viewPaths paths)
+        (Maze.viewFields FlipWall maze ++ Search.viewPaths paths)
