@@ -26,6 +26,7 @@ type Msg
     = ExpandMaze BacktrackStack (List Direction)
     | FindPaths
     | FlipWall Position Direction
+    | FlipKey Position
     | Drag Draggable
     | Drop Position
 
@@ -41,6 +42,7 @@ type alias Model =
     , start : Position
     , end : Position
     , dragged : Maybe Draggable
+    , keys : List Position
     }
 
 
@@ -49,10 +51,16 @@ expandMaze bts =
     Random.generate (ExpandMaze bts) Maze.directionsGenerator
 
 
+firstPath : List Search.Path -> Search.Path
+firstPath paths =
+    List.head paths |> Maybe.withDefault []
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     let
         maze =
+            -- Maze.init 10 20
             Maze.init 50 26
 
         startPos =
@@ -64,7 +72,7 @@ init _ =
         expandStart =
             Position (maze.height // 2) (maze.width // 2)
     in
-    ( Model maze [] startPos endPos Nothing
+    ( Model maze [] startPos endPos Nothing []
     , expandMaze [ expandStart ]
     )
 
@@ -109,6 +117,9 @@ update msg model =
             update FindPaths
                 { model | maze = Maze.flipWall pos dir model.maze }
 
+        FlipKey pos ->
+            ( { model | keys = Secrets.flipKey pos model.keys }, Cmd.none )
+
         Drag draggable ->
             ( { model | dragged = Just draggable }, Cmd.none )
 
@@ -127,9 +138,18 @@ view model =
     , body =
         [ viewMaze model
         , Html.div []
-            [ Html.span [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag Start) ] [ Html.text "drag to place Start" ]
+            [ Html.text <|
+                String.fromList <|
+                    Secrets.keyLetters (firstPath model.paths) model.keys
+            ]
+        , Html.div []
+            [ Html.span
+                [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag Start) ]
+                [ Html.text "drag to place Start" ]
             , Html.text " ... "
-            , Html.span [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag End) ] [ Html.text "drag to place End" ]
+            , Html.span
+                [ HA.draggable "true", HE.on "dragstart" (JD.succeed <| Drag End) ]
+                [ Html.text "drag to place End" ]
             ]
         ]
     }
@@ -147,8 +167,9 @@ viewMaze model =
         , SA.width "700"
         , SA.height "700"
         ]
-        (Maze.viewFields FlipWall Drop model.maze
+        (Maze.viewFields FlipWall FlipKey Drop model.maze
             ++ Search.viewPaths model.paths
             ++ Search.viewStartAndEnd model.start model.end
-            ++ Secrets.viewSumLetters model.maze (List.head model.paths |> Maybe.withDefault [])
+            ++ Secrets.viewSumLetters model.maze (firstPath model.paths)
+            ++ Secrets.viewKeys model.keys
         )

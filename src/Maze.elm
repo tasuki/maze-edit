@@ -211,7 +211,7 @@ flipWall pos dir maze =
 
 
 viewWall : (Position -> Direction -> msg) -> Position -> ( Bool, Direction ) -> Svg msg
-viewWall flipAction position ( visible, dir ) =
+viewWall flipWallAction position ( visible, dir ) =
     let
         nil =
             0.0
@@ -246,9 +246,9 @@ viewWall flipAction position ( visible, dir ) =
         , SA.x2 (String.fromFloat (bx + toFloat position.col))
         , SA.y2 (String.fromFloat (by + toFloat position.row))
         , SA.stroke wallStroke
-        , SA.strokeWidth ".3"
+        , SA.strokeWidth ".2"
         , SA.strokeLinecap "round"
-        , SE.onClick (flipAction position dir)
+        , SE.onClick (flipWallAction position dir)
         ]
         []
 
@@ -272,33 +272,34 @@ viewDirections position passages =
         |> List.map (\dir -> ( not (List.member dir passages), dir ))
 
 
-viewFieldInteract : (Position -> msg) -> Position -> Svg msg
-viewFieldInteract dropAction pos =
+viewFieldInteract : (Position -> msg) -> (Position -> msg) -> Position -> Svg msg
+viewFieldInteract flipKeyAction dropAction pos =
     Svg.rect
         [ SA.x <| String.fromInt pos.col ++ ".2"
         , SA.y <| String.fromInt pos.row ++ ".2"
         , SA.width ".6"
         , SA.height ".6"
         , SA.fill "ghostwhite"
+        , SE.onClick (flipKeyAction pos)
         , SE.preventDefaultOn "dragover" (JD.succeed ( dropAction pos, True ))
         ]
         []
 
 
-viewField : (Position -> Direction -> msg) -> (Position -> msg) -> Maze -> Int -> List Direction -> List (Svg msg)
-viewField flipAction dropAction maze index passages =
+viewField : (Position -> Direction -> msg) -> (Position -> msg) -> (Position -> msg) -> Maze -> Int -> List Direction -> List (Svg msg)
+viewField flipWallAction flipKeyAction dropAction maze index passages =
     let
         position =
             positionFromIndex maze index
     in
-    viewFieldInteract dropAction position
+    viewFieldInteract flipKeyAction dropAction position
         :: List.map
-            (viewWall flipAction position)
+            (viewWall flipWallAction position)
             (viewDirections position passages)
 
 
-viewFields : (Position -> Direction -> msg) -> (Position -> msg) -> Maze -> List (Svg msg)
-viewFields flipAction dropAction maze =
-    Array.indexedMap (viewField flipAction dropAction maze) maze.fields
+viewFields : (Position -> Direction -> msg) -> (Position -> msg) -> (Position -> msg) -> Maze -> List (Svg msg)
+viewFields flipWallAction flipKeyAction dropAction maze =
+    Array.indexedMap (viewField flipWallAction flipKeyAction dropAction maze) maze.fields
         |> Array.toList
         |> List.concat
