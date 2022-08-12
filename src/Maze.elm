@@ -275,10 +275,10 @@ viewDirections position passages =
 viewFieldInteract : (Position -> msg) -> Position -> Svg msg
 viewFieldInteract dropAction pos =
     Svg.rect
-        [ SA.x <| String.fromInt pos.col ++ ".15"
-        , SA.y <| String.fromInt pos.row ++ ".15"
-        , SA.width ".7"
-        , SA.height ".7"
+        [ SA.x <| String.fromInt pos.col ++ ".2"
+        , SA.y <| String.fromInt pos.row ++ ".2"
+        , SA.width ".6"
+        , SA.height ".6"
         , SA.fill "ghostwhite"
         , SE.preventDefaultOn "dragover" (JD.succeed ( dropAction pos, True ))
         ]
